@@ -1,0 +1,42 @@
+/**
+	(C) 2015 Sander de Jong - www.ugoku.nl
+	Licenced under the GPL v2
+
+	The CSS uses unprefixed Flexbox, so if you want to support IE10, Safari 8, Android < 4.4 you will have to prefix the Flexbox properties.
+**/
+
+html, body {
+	color: #000;
+	font-family: sans-serif;
+	margin: 0;
+}
+body {
+	display: flex;
+	flex-direction: row;
+}
+body > * {
+	flex: 1 1 auto;
+}
+#colors {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	justify-content: space-around;
+}
+#colors > div {
+	display: flex;
+	flex: 1 1 auto;
+}
+#colors > div > * {
+	align-self: center;
+	margin: 0 auto;
+}
+aside {
+	padding-left: 1em;
+}
+h1 {
+	margin: 1em 0;
+}
+.light {
+	color: #FFF;
+}
