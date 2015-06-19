@@ -4,6 +4,27 @@
 **/
 
 
+var INDENT = '&nbsp;&nbsp;';
+var dark = [];
+var light = [];
+
+
+/**
+ * Format a color for use in the Javascript code
+ *
+ * @param {number} weight
+ * @param {number} h Hue
+ * @param {number} s Saturation
+ * @param {number} l Lightness
+ *
+ * @returns {string}
+ */
+function formatJScolor(weight, h, s, l)
+{
+	return INDENT + INDENT + "'" + weight + "' : '" + hsl2hex(h, s, l) + "',<br>";
+}
+
+
 /**
  * Convert a 6-character hexadecimal color code to HSL
  *
@@ -93,7 +114,7 @@ function hsl2hex(h, s, l)
 	if (b_hex.length == 1)
 		b_hex = '0' + b_hex;
 
-	return '#' + r_hex + g_hex + b_hex;
+	return r_hex + g_hex + b_hex;
 }
 
 
@@ -169,22 +190,25 @@ function hue2rgb(p, q, hue) {
 /**
  * Sets the color of one of the elements
  *
- * @param {string} element ID of a DOM element
+ * @param {number} weight ID of a DOM element
  *
  * @param {number} h Hue
  * @param {number} s Saturation
  * @param {number} l Lightness
  */
-function setColor(element, h, s, l)
+function setColor(weight, h, s, l)
 {
-	var el = document.getElementById(element);
+	var el = document.getElementById('c_' + weight);
 	el.style.backgroundColor = hslCSS(h, s, l);
 	//el.firstElementChild.innerHTML = 'hsl(' + Math.round(h) + ', ' + Math.round(s) + '%, ' + Math.round(l) + '%)';
-	el.firstElementChild.classList.remove('light');
+	el.classList.remove('light');
 	if (l < 50) {
-		el.firstElementChild.classList.add('light');
+		dark.push(weight);
+		el.classList.add('light');
+	} else {
+		light.push(weight);
 	}
-	el.firstElementChild.innerHTML = hsl2hex(Math.round(h), Math.round(s), Math.round(l));
+	el.firstElementChild.innerHTML = '#' + hsl2hex(Math.round(h), Math.round(s), Math.round(l));
 }
 
 
@@ -194,53 +218,79 @@ function setColor(element, h, s, l)
 function updateColors()
 {
 	var hsl = hex2hsl(document.getElementById('colorPick').value);
+	var html = '';
+
+	// Reset dark/light counters
+	dark = [];
+	light = [];
 
 	var h = hsl.h * 360;
 	var s = hsl.s * 100;
 	var l = hsl.l * 100;
 
+	// Lighter colors
 	var lighterColors = [{
-		element: 'c_50',
+		weight: 50,
 		factor: 0.13
 	}, {
-		element: 'c_100',
+		weight: 100,
 		factor: 0.31
 	}, {
-		element: 'c_200',
+		weight: 200,
 		factor: 0.5
 	}, {
-		element: 'c_300',
+		weight: 300,
 		factor: 0.7
 	}, {
-		element: 'c_400',
+		weight: 400,
 		factor: 0.85
 	}];
 	lighterColors.forEach(function(color){
 		var newS = (s * color.factor);
 		var newL = ((l * color.factor) + 100) / (1 + color.factor);
-		setColor(color.element, h, newS, newL);
+		setColor(color.weight, h, newS, newL);
+		html += formatJScolor(color.weight, h, newS, newL);
 	});
 
-	document.getElementById('c_500').style.backgroundColor = hslCSS(h, s, l);
+	// Base color
+	setColor(500, h, s, l);
+	//document.getElementById('c_500').style.backgroundColor = hslCSS(h, s, l);
+	html += formatJScolor(500, h, s, l);
 
+	// Darker colors
 	var darkerColors = [{
-		element: 'c_600',
+		weight: 600,
 		factor: 0.91
 	}, {
-		element: 'c_700',
+		weight: 700,
 		factor: 0.81
 	}, {
-		element: 'c_800',
+		weight: 800,
 		factor: 0.71
 	}, {
-		element: 'c_900',
+		weight: 900,
 		factor: 0.52
 	}];
 	darkerColors.forEach(function(color){
 		var newS = (s * color.factor);
 		var newL = (l * color.factor);
-		setColor(color.element, h, newS, newL);
+		setColor(color.weight, h, newS, newL);
+		html += formatJScolor(color.weight, h, newS, newL);
 	});
+
+
+	var defaultColor = 'dark';
+	var contrastColorsText = 'contrastLightColors';
+	var contrastColors = light;
+	if (light.length > dark.length) {
+		defaultColor = 'light';
+		contrastColorsText = 'contrastDarkColors';
+		contrastColors = dark;
+	}
+
+	html += INDENT + INDENT + "'contrastDefaultColor': '" + defaultColor + "',<br>";
+	html += INDENT + INDENT + "'" + contrastColorsText + "': ['" + contrastColors.join("', '") + "']"; //TODO
+	document.getElementById('theme').innerHTML = html;
 }
 
 

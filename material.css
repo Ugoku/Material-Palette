@@ -40,3 +40,7 @@ h1 {
 .light {
 	color: #FFF;
 }
+var {
+	color: #106CC8;
+	text-transform: uppercase;
+}
